@@ -122,7 +122,7 @@ export default function App() {
     } catch { return [] }
   })
   const [page, setPage] = useState('home')
-  const [orderId, setOrderId] = useState('')
+  const [placedOrder, setPlacedOrder] = useState(null)
 
   useEffect(() => {
     localStorage.setItem('scentquest-cart', JSON.stringify(cart))
@@ -196,8 +196,17 @@ export default function App() {
     )
   }
 
-  const handleOrderPlaced = (orderId) => {
-    setOrderId(orderId)
+  const handleOrderPlaced = ({ orderId, order }) => {
+    setPlacedOrder(
+      order || {
+        id: orderId,
+        items: [],
+        subtotal: 0,
+        delivery: 0,
+        total: 0,
+        customer: {},
+      }
+    )
     setCart([])
     nav('order-confirmed')
   }
@@ -235,7 +244,7 @@ export default function App() {
             onSuccess={handleOrderPlaced}
           />
         )}
-        {page === 'order-confirmed' && <OrderConfirmed nav={nav} orderId={orderId} />}
+        {page === 'order-confirmed' && <OrderConfirmed nav={nav} order={placedOrder} />}
       </main>
       <Footer />
     </div>
@@ -509,19 +518,104 @@ function Cart({
   )
 }
 
-function OrderConfirmed({ nav, orderId }) {
+function OrderConfirmed({ nav, order }) {
+  const items = order?.items || []
+  const customer = order?.customer || {}
+
+  const optionLabel = (item, kind, raw) => {
+    if (!raw) return null
+    const product = products.find((p) => p.id === item.productId)
+    if (kind === 'color') {
+      return product?.colors.find((c) => c.value === raw)?.label || raw
+    }
+    return raw
+  }
+
+  const addOnLabels = (item) => {
+    const product = products.find((p) => p.id === item.productId)
+    return (item.addOns || [])
+      .map((id) => product?.addOns.find((a) => a.id === id)?.label || id)
+      .join(', ')
+  }
+
   return (
     <section className="confirmed">
-      <div className="confirm-card">
+      <div className="confirm-card wide">
         <span className="confirm-icon">✅</span>
         <h1>Order Confirmed!</h1>
-        {orderId && (
+        {order?.id && (
           <p className="confirm-order-id">
-            Order ID <strong>{orderId}</strong>
+            Order ID <strong>{order.id}</strong>
           </p>
         )}
-        <p>Thank you. We will call you on your phone number to confirm delivery.</p>
-        <p className="confirm-cod">Paying with Cash on Delivery.</p>
+
+        {items.length > 0 && (
+          <div className="confirm-details">
+            <div className="confirm-block">
+              <h4>Items</h4>
+              <ul className="confirm-items">
+                {items.map((item, i) => (
+                  <li key={i}>
+                    <div className="confirm-item-info">
+                      <span className="confirm-item-name">{item.name}</span>
+                      <span className="confirm-item-meta">
+                        {[
+                          optionLabel(item, 'size', item.size),
+                          optionLabel(item, 'color', item.color),
+                          optionLabel(item, 'scent', item.scent),
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </span>
+                      {addOnLabels(item) && (
+                        <span className="confirm-item-addons">+ {addOnLabels(item)}</span>
+                      )}
+                    </div>
+                    <span className="confirm-item-price">
+                      {formatPrice(item.unitPrice)} × {item.qty}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="confirm-block">
+              <h4>Delivery address</h4>
+              <p className="confirm-address">
+                <strong>{customer.name}</strong>
+                <br />
+                {customer.address}
+                <br />
+                Pincode {customer.pincode}
+                <br />
+                {customer.phone}
+                <br />
+                {customer.email}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="confirm-total">
+          <div className="total-row">
+            <span>Subtotal</span>
+            <span>{formatPrice(order?.subtotal || 0)}</span>
+          </div>
+          <div className="total-row">
+            <span>Delivery</span>
+            <span className={order?.delivery === 0 ? 'free-text' : ''}>
+              {order?.delivery === 0 ? 'FREE' : formatPrice(order?.delivery || 0)}
+            </span>
+          </div>
+          <div className="total-row total-grand">
+            <span>Total</span>
+            <span>{formatPrice(order?.total || 0)}</span>
+          </div>
+        </div>
+
+        <p className="confirm-cod">
+          Paying with Cash on Delivery. We will call you on your phone number to confirm delivery.
+        </p>
         <button className="continue-shopping" onClick={() => nav('home')}>
           Continue shopping
         </button>

@@ -109,7 +109,7 @@ export default function CheckoutForm({
         return
       }
 
-      onSuccess(data.orderId)
+      onSuccess({ orderId: data.orderId, order: data.order || null })
     } catch {
       setServerError('Network error. Please check your connection and try again.')
     } finally {
