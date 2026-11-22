@@ -103,7 +103,7 @@ export function InfoPage({ kicker, title, intro, children }) {
   )
 }
 
-export function FaqPage() {
+export function FaqPage({ navigate }) {
   return (
     <InfoPage
       kicker="Help centre"
@@ -121,7 +121,9 @@ export function FaqPage() {
       <div className="info-cta">
         <h3>Still not sure?</h3>
         <p>Tell us your dog’s breed, age and weight and we will recommend the right kit.</p>
-        <a className="btn btn-primary" href="#shop">Browse the kits</a>
+        <button className="btn btn-primary" onClick={() => navigate('shop')}>
+          Browse the kits
+        </button>
       </div>
     </InfoPage>
   )
@@ -149,20 +151,22 @@ export function SafetyPage() {
           Choose by your dog’s weight, not their age. If two sizes look right, pick the
           larger one — a toy that is too small is the main choking risk.
         </p>
-        <table className="info-table">
-          <thead>
-            <tr><th>Dog weight</th><th>Recommended size</th><th>Good for</th></tr>
-          </thead>
-          <tbody>
-            {sizeGuide.map((r) => (
-              <tr key={r.weight}>
-                <td>{r.weight}</td>
-                <td>{r.size}</td>
-                <td>{r.note}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-wrap">
+          <table className="info-table">
+            <thead>
+              <tr><th>Dog weight</th><th>Recommended size</th><th>Good for</th></tr>
+            </thead>
+            <tbody>
+              {sizeGuide.map((r) => (
+                <tr key={r.weight}>
+                  <td>{r.weight}</td>
+                  <td>{r.size}</td>
+                  <td>{r.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="info-section safety-warning">
@@ -178,7 +182,7 @@ export function SafetyPage() {
   )
 }
 
-export function AboutPage({ products }) {
+export function AboutPage({ products, navigate }) {
   return (
     <InfoPage
       kicker="Our story"
@@ -204,13 +208,17 @@ export function AboutPage({ products }) {
         <h2>What we make</h2>
         <div className="about-kits">
           {products.map((p) => (
-            <a key={p.id} className="about-kit" href={`#product-${p.id}`}>
-              <img src={p.images[0]} alt={p.name} />
+            <button
+              key={p.id}
+              className="about-kit"
+              onClick={() => navigate(`product-${p.id}`)}
+            >
+              <img src={p.images[0]} alt={p.name} loading="lazy" />
               <div>
                 <h3>{p.name}</h3>
                 <p>{p.desc}</p>
               </div>
-            </a>
+            </button>
           ))}
         </div>
       </div>

@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { formatPrice } from '../lib/format.js'
 
-export default function ProductPage({ product, onAddToCart }) {
+export default function ProductPage({ product, onAddToCart, navigate }) {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0].label)
   const [selectedColor, setSelectedColor] = useState(product.colors[0].value)
   const [selectedScent, setSelectedScent] = useState(product.scents[0].label)
   const [selectedAddOns, setSelectedAddOns] = useState([])
   const [quantity, setQuantity] = useState(1)
   const [mainImage, setMainImage] = useState(product.images[0])
+  const [added, setAdded] = useState(false)
 
   const sizeMod = product.sizes.find((s) => s.label === selectedSize).priceMod
   const scentMod = product.scents.find((s) => s.label === selectedScent).priceMod
@@ -24,29 +25,43 @@ export default function ProductPage({ product, onAddToCart }) {
     )
   }
 
+  const handleAddToCart = () => {
+    onAddToCart({
+      productId: product.id,
+      name: product.name,
+      size: selectedSize,
+      color: selectedColor,
+      scent: selectedScent,
+      addOns: selectedAddOns,
+      qty: quantity,
+      unitPrice,
+      image: mainImage,
+    })
+    setAdded(true)
+    window.setTimeout(() => setAdded(false), 2200)
+  }
+
   return (
     <section className="product-page">
       <div className="section-inner product-layout">
-        <a
-          href="#shop"
-          className="back-link"
-          onClick={(e) => { e.preventDefault(); window.location.hash = 'shop'; }}
-        >
+        <button className="back-link" onClick={() => navigate('shop')}>
           ← Back to shop
-        </a>
+        </button>
         <div className="product-gallery">
           <div className="main-image">
             <img src={mainImage} alt={product.name} />
           </div>
           <div className="thumbnails">
             {product.images.map((img, i) => (
-              <img
+              <button
                 key={i}
-                src={img}
-                alt={product.name}
                 className={`thumb ${i === 0 ? 'active' : ''}`}
                 onClick={() => setMainImage(img)}
-              />
+                aria-label={`View image ${i + 1} of ${product.name}`}
+                aria-pressed={i === 0}
+              >
+                <img src={img} alt="" />
+              </button>
             ))}
           </div>
         </div>
@@ -110,7 +125,8 @@ export default function ProductPage({ product, onAddToCart }) {
                     checked={selectedAddOns.includes(a.id)}
                     onChange={() => toggleAddOn(a.id)}
                   />
-                  <span>{a.label} {a.price > 0 ? `+${formatPrice(a.price)}` : ''}</span>
+                  <span className="addon-label">{a.label}</span>
+                  <span className="addon-price">+{formatPrice(a.price)}</span>
                 </label>
               ))}
             </div>
@@ -122,6 +138,7 @@ export default function ProductPage({ product, onAddToCart }) {
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1}
+                aria-label="Decrease quantity"
               >
                 −
               </button>
@@ -129,11 +146,17 @@ export default function ProductPage({ product, onAddToCart }) {
                 type="number"
                 value={quantity}
                 min={1}
+                aria-label="Quantity"
                 onChange={(e) =>
                   setQuantity(Math.max(1, parseInt(e.target.value) || 1))
                 }
               />
-              <button onClick={() => setQuantity(quantity + 1)}>+</button>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
             </div>
           </div>
 
@@ -149,23 +172,19 @@ export default function ProductPage({ product, onAddToCart }) {
           </div>
 
           <button
-            className="add-to-cart-btn"
-            onClick={() => {
-              onAddToCart({
-                productId: product.id,
-                name: product.name,
-                size: selectedSize,
-                color: selectedColor,
-                scent: selectedScent,
-                addOns: selectedAddOns,
-                qty: quantity,
-                unitPrice,
-                image: mainImage,
-              })
-            }}
+            className={`add-to-cart-btn ${added ? 'is-added' : ''}`}
+            onClick={handleAddToCart}
           >
-            Add to cart
+            {added ? 'Added to cart' : 'Add to cart'}
           </button>
+          {added && (
+            <button className="view-cart-btn" onClick={() => navigate('cart')}>
+              View cart
+            </button>
+          )}
+          <p className="product-footnote">
+            Cash on delivery · Free delivery over ₹4,999 · Dispatch in 2 working days
+          </p>
         </div>
       </div>
     </section>

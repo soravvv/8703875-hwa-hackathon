@@ -120,18 +120,28 @@ export default function CheckoutForm({
   if (cart.length === 0) {
     return (
       <section className="checkout">
-        <div className="section-inner checkout-header">
-          <h1>Checkout</h1>
-          <button className="btn btn-outline" onClick={onBack}>
+        <div className="page-head">
+          <div>
+            <span className="section-kicker">Checkout</span>
+            <h1>Checkout</h1>
+          </div>
+          <button className="btn btn-outline" onClick={onBack} type="button">
             ← Back to cart
           </button>
         </div>
-        <p className="empty">
-          There is nothing to check out.{' '}
-          <span className="empty-link" onClick={onBack}>
-            Return to cart
+        <div className="empty-state">
+          <span className="empty-icon" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+            </svg>
           </span>
-        </p>
+          <h2>There is nothing to check out</h2>
+          <p>Your cart is empty. Add a kit and come back here to place your order.</p>
+          <button className="btn btn-primary" onClick={onBack}>
+            Return to cart
+          </button>
+        </div>
       </section>
     )
   }
@@ -140,8 +150,12 @@ export default function CheckoutForm({
 
   return (
     <section className="checkout">
-      <div className="section-inner checkout-header">
-        <h1>Checkout</h1>
+      <div className="page-head">
+        <div>
+          <span className="section-kicker">Checkout</span>
+          <h1>Checkout</h1>
+          <p className="page-sub">Pay in cash when your order arrives. No advance payment needed.</p>
+        </div>
         <button className="btn btn-outline" onClick={onBack} type="button">
           ← Back to cart
         </button>
@@ -149,7 +163,8 @@ export default function CheckoutForm({
 
       {serverError && (
         <div className="form-error-banner" role="alert">
-          {serverError}
+          <strong>We could not place your order.</strong>
+          <span>{serverError}</span>
         </div>
       )}
 
