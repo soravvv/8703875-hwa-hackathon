@@ -1,35 +1,92 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
+import ProductPage from './components/ProductPage.jsx'
 
 const products = [
   {
     id: 'snuffle-mat',
     name: 'Snuffle Snack Mat',
-    price: 24,
+    basePrice: 24,
     desc: 'Hide treats in the fleece folds for nose-work fun.',
-    image: '/images/scentquest-2-lifestyle-beagle.png',
+    images: [
+      '/images/scentquest-2-lifestyle-beagle.png',
+      '/images/scentquest-3-inside-cutaway.png',
+      '/images/scentquest-5-scent-capsules.png',
+    ],
+    sizes: [
+      { label: 'Small', priceMod: 0 },
+      { label: 'Medium', priceMod: 6 },
+      { label: 'Large', priceMod: 12 },
+    ],
+    colors: [
+      { label: 'Forest', value: 'forest', hex: '#2d6a4f' },
+      { label: 'Slate', value: 'slate', hex: '#6b7280' },
+      { label: 'Sand', value: 'sand', hex: '#e7d6c6' },
+    ],
+    scents: [
+      { label: 'Unscented', priceMod: 0 },
+      { label: 'Bacon', priceMod: 3 },
+      { label: 'Peanut Butter', priceMod: 3 },
+    ],
+    addOns: [
+      { id: 'extra-treat', label: 'Extra treat pouch', price: 4 },
+      { id: 'gift-wrap', label: 'Gift wrap', price: 5 },
+      { id: 'guide', label: 'Scent training guide', price: 6 },
+    ],
   },
   {
     id: 'scent-puzzle',
     name: 'Scent Puzzle Box',
-    price: 18,
+    basePrice: 18,
     desc: 'Slide covers to reveal hidden scented compartments.',
-    image: '/images/scentquest-3-inside-cutaway.png',
+    images: [
+      '/images/scentquest-3-inside-cutaway.png',
+      '/images/scentquest-4-colours.png',
+      '/images/scentquest-2-lifestyle-beagle.png',
+    ],
+    sizes: [
+      { label: 'One size', priceMod: 0 },
+    ],
+    colors: [
+      { label: 'Forest', value: 'forest', hex: '#2d6a4f' },
+      { label: 'Slate', value: 'slate', hex: '#6b7280' },
+    ],
+    scents: [
+      { label: 'Unscented', priceMod: 0 },
+      { label: 'Bacon', priceMod: 3 },
+    ],
+    addOns: [
+      { id: 'extra-treat', label: 'Extra treat pouch', price: 4 },
+      { id: 'guide', label: 'Scent training guide', price: 6 },
+    ],
   },
   {
     id: 'trail-kit',
     name: 'Backyard Trail Kit',
-    price: 32,
+    basePrice: 32,
     desc: 'Scent markers to lay a tracking trail outdoors.',
-    image: '/images/scentquest-4-colours.png',
-  },
-  {
-    id: 'lick-mat',
-    name: 'Calm Lick Mat',
-    price: 12,
-    desc: 'Spread peanut butter for a soothing lick session.',
-    image: '/images/scentquest-5-scent-capsules.png',
+    images: [
+      '/images/scentquest-4-colours.png',
+      '/images/scentquest-5-scent-capsules.png',
+      '/images/scentquest-6-app-screen.png',
+    ],
+    sizes: [
+      { label: 'Starter', priceMod: 0 },
+      { label: 'Full', priceMod: 15 },
+    ],
+    colors: [
+      { label: 'Forest', value: 'forest', hex: '#2d6a4f' },
+      { label: 'Sand', value: 'sand', hex: '#e7d6c6' },
+    ],
+    scents: [
+      { label: 'Unscented', priceMod: 0 },
+      { label: 'Peanut Butter', priceMod: 3 },
+    ],
+    addOns: [
+      { id: 'gift-wrap', label: 'Gift wrap', price: 5 },
+      { id: 'guide', label: 'Scent training guide', price: 6 },
+    ],
   },
 ]
 
@@ -41,24 +98,9 @@ const steps = [
 ]
 
 const levels = [
-  {
-    name: 'Beginner',
-    desc: 'Easy finds for puppies and new sniffers.',
-    badge: 'Puppy-friendly',
-    image: '/images/scentquest-5-scent-capsules.png',
-  },
-  {
-    name: 'Intermediate',
-    desc: 'Multi-step puzzles for curious adult dogs.',
-    badge: 'Best seller',
-    image: '/images/scentquest-2-lifestyle-beagle.png',
-  },
-  {
-    name: 'Advanced',
-    desc: 'Complex trails and hidden compartments.',
-    badge: 'For scent hounds',
-    image: '/images/scentquest-3-inside-cutaway.png',
-  },
+  { name: 'Beginner', desc: 'Easy finds for puppies and new sniffers.', badge: 'Puppy-friendly', image: '/images/scentquest-5-scent-capsules.png' },
+  { name: 'Intermediate', desc: 'Multi-step puzzles for curious adult dogs.', badge: 'Best seller', image: '/images/scentquest-2-lifestyle-beagle.png' },
+  { name: 'Advanced', desc: 'Complex trails and hidden compartments.', badge: 'For scent hounds', image: '/images/scentquest-3-inside-cutaway.png' },
 ]
 
 const reviews = [
@@ -68,41 +110,82 @@ const reviews = [
 ]
 
 export default function App() {
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState(() => {
+    try {
+      const raw = localStorage.getItem('scentquest-cart')
+      return raw ? JSON.parse(raw) : []
+    } catch { return [] }
+  })
   const [page, setPage] = useState('home')
+
+  useEffect(() => {
+    localStorage.setItem('scentquest-cart', JSON.stringify(cart))
+  }, [cart])
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const h = window.location.hash.replace(/^#/, '')
+      if (h.startsWith('product-')) setPage('product')
+      else if (h === 'cart') setPage('cart')
+      else if (h === 'checkout') setPage('checkout')
+      else if (h === 'order-confirmed') setPage('order-confirmed')
+      else if (h === 'shop') setPage('shop')
+      else setPage('home')
+    }
+    window.addEventListener('hashchange', onHashChange)
+    onHashChange()
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
 
   const nav = (to) => { setPage(to); window.location.hash = to }
 
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
+  const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.qty, 0)
 
-  const addToCart = (id) => {
+  const productIdFromHash = () => {
+    const h = window.location.hash.replace(/^#/, '')
+    return h.replace(/^product-/, '')
+  }
+
+  const addToCart = (item) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === id)
+      const existing = prev.find(
+        (i) =>
+          i.productId === item.productId &&
+          i.size === item.size &&
+          i.color === item.color &&
+          i.scent === item.scent &&
+          JSON.stringify(i.addOns) === JSON.stringify(item.addOns)
+      )
       if (existing) {
-        return prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i))
+        return prev.map((i) =>
+          i.productId === item.productId &&
+          i.size === item.size &&
+          i.color === item.color &&
+          i.scent === item.scent &&
+          JSON.stringify(i.addOns) === JSON.stringify(item.addOns)
+            ? { ...i, qty: i.qty + item.qty }
+            : i
+        )
       }
-      return [...prev, { id, qty: 1 }]
+      return [...prev, item]
     })
-    setPage('cart')
-    window.location.hash = 'cart'
+    nav('cart')
   }
 
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((i) => i.id !== id))
+  const removeFromCart = (index) => {
+    setCart((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const changeQty = (id, delta) => {
+  const changeQty = (index, delta) => {
     setCart((prev) =>
       prev
-        .map((i) => (i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i))
-        .filter((i) => i.qty > 0)
+        .map((i, idx) =>
+          idx === index ? { ...i, qty: Math.max(0, i.qty + delta) } : i
+        )
+        .filter((_, idx) => idx === index ? prev[idx].qty + delta > 0 : true)
     )
   }
-
-  const subtotal = cart.reduce((sum, item) => {
-    const p = products.find((p) => p.id === item.id)
-    return sum + p.price * item.qty
-  }, 0)
 
   const handleCheckout = async (e) => {
     e.preventDefault()
@@ -126,8 +209,7 @@ export default function App() {
       const data = await res.json()
       if (res.ok) {
         setCart([])
-        setPage('order-confirmed')
-        window.location.hash = 'order-confirmed'
+        nav('order-confirmed')
       } else {
         alert(data.error || 'Order failed. Try again.')
       }
@@ -136,14 +218,34 @@ export default function App() {
     }
   }
 
+  const activeProduct = products.find((p) => p.id === productIdFromHash())
+
   return (
     <div className="app">
       <Header cartCount={cartCount} onCartClick={() => nav('cart')} />
       <main className="page">
-        {page === 'home' && <LandingPage nav={nav} addToCart={addToCart} />}
-        {page === 'shop' && <Shop products={products} addToCart={addToCart} nav={nav} />}
-        {page === 'cart' && <Cart cart={cart} removeFromCart={removeFromCart} changeQty={changeQty} subtotal={subtotal} nav={nav} />}
-        {page === 'checkout' && <Checkout cart={cart} subtotal={subtotal} onSubmit={handleCheckout} nav={nav} />}
+        {page === 'home' && <LandingPage nav={nav} />}
+        {page === 'shop' && <Shop products={products} nav={nav} />}
+        {page === 'product' && activeProduct && (
+          <ProductPage product={activeProduct} onAddToCart={addToCart} />
+        )}
+        {page === 'cart' && (
+          <Cart
+            cart={cart}
+            removeFromCart={removeFromCart}
+            changeQty={changeQty}
+            subtotal={subtotal}
+            nav={nav}
+          />
+        )}
+        {page === 'checkout' && (
+          <Checkout
+            cart={cart}
+            subtotal={subtotal}
+            onSubmit={handleCheckout}
+            nav={nav}
+          />
+        )}
         {page === 'order-confirmed' && <OrderConfirmed nav={nav} />}
       </main>
       <Footer />
@@ -151,7 +253,7 @@ export default function App() {
   )
 }
 
-function LandingPage({ nav, addToCart }) {
+function LandingPage({ nav }) {
   return (
     <>
       <section className="hero">
@@ -159,10 +261,15 @@ function LandingPage({ nav, addToCart }) {
           <div className="hero-content">
             <span className="hero-kicker">New for curious dogs</span>
             <h1>Scent-led play that tires them out.</h1>
-            <p className="hero-tagline">ScentQuest turns sniffing into a rewarding game — mental enrichment, calmer dogs, happier homes.</p>
+            <p className="hero-tagline">
+              ScentQuest turns sniffing into a rewarding game — mental enrichment,
+              calmer dogs, happier homes.
+            </p>
             <div className="hero-actions">
-              <button className="btn btn-primary" onClick={() => nav('shop')}>Shop ScentQuest</button>
-              <button className="btn btn-outline" onClick={() => window.scrollTo({ top: document.getElementById('how-it-works')?.offsetTop || 0, behavior: 'smooth' })}>
+              <button className="btn btn-primary" onClick={() => nav('shop')}>
+                Shop ScentQuest
+              </button>
+              <button className="btn btn-outline">
                 How it works
               </button>
             </div>
@@ -270,30 +377,36 @@ function LandingPage({ nav, addToCart }) {
         <div className="cta-card">
           <h2>Ready for a calmer dog?</h2>
           <p>Start with scent-led enrichment today.</p>
-          <button className="btn btn-primary" onClick={() => nav('shop')}>Shop ScentQuest now</button>
+          <button className="btn btn-primary" onClick={() => nav('shop')}>
+            Shop ScentQuest now
+          </button>
         </div>
       </section>
     </>
   )
 }
 
-function Shop({ products, addToCart, nav }) {
+function Shop({ products, nav }) {
   return (
     <section className="shop">
       <div className="section-inner shop-header">
         <h1>Shop</h1>
-        <button className="btn btn-outline" onClick={() => nav('home')}>← Back to home</button>
+        <button className="btn btn-outline" onClick={() => nav('home')}>
+          ← Back to home
+        </button>
       </div>
       <p className="shop-intro">Scent-driven enrichment for curious dogs.</p>
       <div className="product-grid">
         {products.map((p) => (
           <article key={p.id} className="product-card">
-            <img className="product-img" src={p.image} alt={p.name} />
+            <img className="product-img" src={p.images[0]} alt={p.name} />
             <h3>{p.name}</h3>
             <p className="product-desc">{p.desc}</p>
             <div className="product-footer">
-              <span className="price">${p.price}</span>
-              <button className="add-btn" onClick={() => addToCart(p.id)}>Add to cart</button>
+              <span className="price">From ${p.basePrice}</span>
+              <button className="add-btn" onClick={() => nav(`product-${p.id}`)}>
+                Choose options
+              </button>
             </div>
           </article>
         ))}
@@ -307,27 +420,53 @@ function Cart({ cart, removeFromCart, changeQty, subtotal, nav }) {
     <section className="cart">
       <div className="section-inner cart-header">
         <h1>Your Cart</h1>
-        <button className="btn btn-outline" onClick={() => nav('shop')}>← Keep shopping</button>
+        <button className="btn btn-outline" onClick={() => nav('shop')}>
+          ← Keep shopping
+        </button>
       </div>
       {cart.length === 0 ? (
-        <p className="empty">Your cart is empty. <span className="empty-link" onClick={() => nav('shop')}>Browse products</span></p>
+        <p className="empty">
+          Your cart is empty.{' '}
+          <span className="empty-link" onClick={() => nav('shop')}>
+            Browse products
+          </span>
+        </p>
       ) : (
         <>
           <div className="cart-list">
-            {cart.map((item) => {
-              const p = products.find((p) => p.id === item.id)
+            {cart.map((item, i) => {
+              const p = products.find((p) => p.id === item.productId)
+              const img = item.image || (p ? p.images[0] : '/images/scentquest-1-hero.png')
               return (
-                <div key={item.id} className="cart-item">
-                  <img className="cart-item-img" src={p.image} alt={p.name} />
+                <div key={i} className="cart-item">
+                  <img className="cart-item-img" src={img} alt={item.name} />
                   <div className="cart-item-info">
-                    <div className="cart-item-name">{p.name}</div>
-                    <div className="cart-item-price">${p.price}</div>
+                    <div className="cart-item-name">{item.name}</div>
+                    <div className="cart-item-meta">
+                      {item.size} • {item.color} • {item.scent}
+                    </div>
+                    {item.addOns.length > 0 && (
+                      <div className="cart-item-addons">
+                        + {item.addOns.join(', ')}
+                      </div>
+                    )}
+                    <div className="cart-item-price">${item.unitPrice}</div>
                   </div>
                   <div className="cart-item-controls">
-                    <button className="qty-btn" onClick={() => changeQty(item.id, -1)}>−</button>
+                    <button
+                      className="qty-btn"
+                      onClick={() => changeQty(i, -1)}
+                      disabled={item.qty <= 1}
+                    >
+                      −
+                    </button>
                     <span className="qty">{item.qty}</span>
-                    <button className="qty-btn" onClick={() => changeQty(item.id, 1)}>+</button>
-                    <button className="remove-btn" onClick={() => removeFromCart(item.id)}>Remove</button>
+                    <button className="qty-btn" onClick={() => changeQty(i, 1)}>
+                      +
+                    </button>
+                    <button className="remove-btn" onClick={() => removeFromCart(i)}>
+                      Remove
+                    </button>
                   </div>
                 </div>
               )
@@ -350,7 +489,9 @@ function Checkout({ cart, subtotal, onSubmit, nav }) {
     <section className="checkout">
       <div className="section-inner checkout-header">
         <h1>Checkout</h1>
-        <button className="btn btn-outline" onClick={() => nav('cart')}>← Back to cart</button>
+        <button className="btn btn-outline" onClick={() => nav('cart')}>
+          ← Back to cart
+        </button>
       </div>
       <form onSubmit={onSubmit} className="checkout-form">
         <div className="form-group">
@@ -367,18 +508,20 @@ function Checkout({ cart, subtotal, onSubmit, nav }) {
         </div>
         <div className="order-summary">
           <h3>Order Summary</h3>
-          {cart.map((item) => {
-            const p = products.find((p) => p.id === item.id)
-            return (
-              <div key={item.id} className="summary-item">
-                <span>{p.name} × {item.qty}</span>
-                <span>${p.price * item.qty}</span>
-              </div>
-            )
-          })}
-          <div className="summary-total"><span>Total</span><span>${subtotal}</span></div>
+          {cart.map((item) => (
+            <div key={item.productId + '-' + item.size} className="summary-item">
+              <span>{item.name} × {item.qty}</span>
+              <span>${item.unitPrice * item.qty}</span>
+            </div>
+          ))}
+          <div className="summary-total">
+            <span>Total</span>
+            <span>${subtotal}</span>
+          </div>
         </div>
-        <button type="submit" className="place-order-btn">Place Order</button>
+        <button type="submit" className="place-order-btn">
+          Place Order
+        </button>
       </form>
     </section>
   )
@@ -391,7 +534,9 @@ function OrderConfirmed({ nav }) {
         <span className="confirm-icon">✅</span>
         <h1>Order Confirmed!</h1>
         <p>Thank you. Your ScentQuest order has been placed.</p>
-        <button className="continue-shopping" onClick={() => nav('home')}>Continue shopping</button>
+        <button className="continue-shopping" onClick={() => nav('home')}>
+          Continue shopping
+        </button>
       </div>
     </section>
   )
