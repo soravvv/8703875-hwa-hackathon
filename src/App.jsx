@@ -3,6 +3,7 @@ import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import ProductPage from './components/ProductPage.jsx'
 import CheckoutForm from './components/CheckoutForm.jsx'
+import { AboutPage, FaqPage, SafetyPage } from './components/InfoPages.jsx'
 import { formatPrice } from './lib/format.js'
 
 const FREE_DELIVERY_THRESHOLD = 4999
@@ -136,6 +137,9 @@ export default function App() {
       else if (h === 'checkout') setPage('checkout')
       else if (h === 'order-confirmed') setPage('order-confirmed')
       else if (h === 'shop') setPage('shop')
+      else if (h === 'faq') setPage('faq')
+      else if (h === 'safety') setPage('safety')
+      else if (h === 'about') setPage('about')
       else setPage('home')
     }
     window.addEventListener('hashchange', onHashChange)
@@ -245,6 +249,9 @@ export default function App() {
           />
         )}
         {page === 'order-confirmed' && <OrderConfirmed nav={nav} order={placedOrder} />}
+        {page === 'faq' && <FaqPage />}
+        {page === 'safety' && <SafetyPage />}
+        {page === 'about' && <AboutPage products={products} />}
       </main>
       <Footer />
     </div>
@@ -378,6 +385,11 @@ function LandingPage({ nav }) {
           <button className="btn btn-primary" onClick={() => nav('shop')}>
             Shop ScentQuest now
           </button>
+          <div className="cta-links">
+            <a href="#about" onClick={(e) => { e.preventDefault(); nav('about') }}>About us</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); nav('faq') }}>FAQ</a>
+            <a href="#safety" onClick={(e) => { e.preventDefault(); nav('safety') }}>Safety guide</a>
+          </div>
         </div>
       </section>
     </>

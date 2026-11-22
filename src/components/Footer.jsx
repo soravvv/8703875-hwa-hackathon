@@ -9,12 +9,15 @@ export default function Footer() {
           <p className="footer-tagline">Scent-driven enrichment for curious dogs.</p>
         </div>
         <div className="footer-links">
-          <a href="/">Shop</a>
-          <a href="/cart">Cart</a>
-          <a href="/checkout">Checkout</a>
+          <a href="#shop">Shop</a>
+          <a href="#cart">Cart</a>
+          <a href="#checkout">Checkout</a>
+          <a href="#about">About</a>
+          <a href="#faq">FAQ</a>
+          <a href="#safety">Safety</a>
         </div>
         <div className="footer-note">
-          &copy; {year} ScentQuest. Demo store.
+          &copy; {year} ScentQuest. Cash on delivery. Free shipping over ₹4,999.
         </div>
       </div>
     </footer>

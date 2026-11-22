@@ -1,7 +1,8 @@
 const navLinks = [
-  { to: '/', label: 'Shop' },
-  { to: '/cart', label: 'Cart' },
-  { to: '/checkout', label: 'Checkout' },
+  { to: 'shop', label: 'Shop' },
+  { to: 'about', label: 'About' },
+  { to: 'faq', label: 'FAQ' },
+  { to: 'safety', label: 'Safety' },
 ]
 
 export default function Header({ cartCount, onCartClick }) {
@@ -15,9 +16,9 @@ export default function Header({ cartCount, onCartClick }) {
           {navLinks.map((link) => (
             <a
               key={link.to}
-              href={link.to}
+              href={`#${link.to}`}
               className="nav-link"
-              onClick={(e) => { e.preventDefault(); window.location.hash = link.to.slice(1); }}
+              onClick={(e) => { e.preventDefault(); window.location.hash = link.to }}
             >
               {link.label}
             </a>
