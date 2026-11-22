@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react'
 import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import ProductPage from './components/ProductPage.jsx'
+import CheckoutForm from './components/CheckoutForm.jsx'
+import { formatPrice } from './lib/format.js'
+
+const FREE_DELIVERY_THRESHOLD = 4999
+const DELIVERY_FEE = 199
 
 const products = [
   {
     id: 'snuffle-mat',
     name: 'Snuffle Snack Mat',
-    basePrice: 24,
+    basePrice: 1299,
     desc: 'Hide treats in the fleece folds for nose-work fun.',
     images: [
       '/images/scentquest-2-lifestyle-beagle.png',
@@ -16,8 +21,8 @@ const products = [
     ],
     sizes: [
       { label: 'Small', priceMod: 0 },
-      { label: 'Medium', priceMod: 6 },
-      { label: 'Large', priceMod: 12 },
+      { label: 'Medium', priceMod: 300 },
+      { label: 'Large', priceMod: 600 },
     ],
     colors: [
       { label: 'Forest', value: 'forest', hex: '#2d6a4f' },
@@ -26,19 +31,19 @@ const products = [
     ],
     scents: [
       { label: 'Unscented', priceMod: 0 },
-      { label: 'Bacon', priceMod: 3 },
-      { label: 'Peanut Butter', priceMod: 3 },
+      { label: 'Bacon', priceMod: 99 },
+      { label: 'Peanut Butter', priceMod: 99 },
     ],
     addOns: [
-      { id: 'extra-treat', label: 'Extra treat pouch', price: 4 },
-      { id: 'gift-wrap', label: 'Gift wrap', price: 5 },
-      { id: 'guide', label: 'Scent training guide', price: 6 },
+      { id: 'extra-treat', label: 'Extra treat pouch', price: 149 },
+      { id: 'gift-wrap', label: 'Gift wrap', price: 199 },
+      { id: 'guide', label: 'Scent training guide', price: 249 },
     ],
   },
   {
     id: 'scent-puzzle',
     name: 'Scent Puzzle Box',
-    basePrice: 18,
+    basePrice: 1899,
     desc: 'Slide covers to reveal hidden scented compartments.',
     images: [
       '/images/scentquest-3-inside-cutaway.png',
@@ -54,17 +59,17 @@ const products = [
     ],
     scents: [
       { label: 'Unscented', priceMod: 0 },
-      { label: 'Bacon', priceMod: 3 },
+      { label: 'Bacon', priceMod: 99 },
     ],
     addOns: [
-      { id: 'extra-treat', label: 'Extra treat pouch', price: 4 },
-      { id: 'guide', label: 'Scent training guide', price: 6 },
+      { id: 'extra-treat', label: 'Extra treat pouch', price: 149 },
+      { id: 'guide', label: 'Scent training guide', price: 249 },
     ],
   },
   {
     id: 'trail-kit',
     name: 'Backyard Trail Kit',
-    basePrice: 32,
+    basePrice: 2999,
     desc: 'Scent markers to lay a tracking trail outdoors.',
     images: [
       '/images/scentquest-4-colours.png',
@@ -73,7 +78,7 @@ const products = [
     ],
     sizes: [
       { label: 'Starter', priceMod: 0 },
-      { label: 'Full', priceMod: 15 },
+      { label: 'Full', priceMod: 1200 },
     ],
     colors: [
       { label: 'Forest', value: 'forest', hex: '#2d6a4f' },
@@ -81,11 +86,11 @@ const products = [
     ],
     scents: [
       { label: 'Unscented', priceMod: 0 },
-      { label: 'Peanut Butter', priceMod: 3 },
+      { label: 'Peanut Butter', priceMod: 99 },
     ],
     addOns: [
-      { id: 'gift-wrap', label: 'Gift wrap', price: 5 },
-      { id: 'guide', label: 'Scent training guide', price: 6 },
+      { id: 'gift-wrap', label: 'Gift wrap', price: 199 },
+      { id: 'guide', label: 'Scent training guide', price: 249 },
     ],
   },
 ]
@@ -117,6 +122,7 @@ export default function App() {
     } catch { return [] }
   })
   const [page, setPage] = useState('home')
+  const [orderId, setOrderId] = useState('')
 
   useEffect(() => {
     localStorage.setItem('scentquest-cart', JSON.stringify(cart))
@@ -141,6 +147,9 @@ export default function App() {
 
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.qty, 0)
+  const delivery = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE
+  const total = subtotal + delivery
+  const amountToFreeDelivery = Math.max(0, FREE_DELIVERY_THRESHOLD - subtotal)
 
   const productIdFromHash = () => {
     const h = window.location.hash.replace(/^#/, '')
@@ -187,35 +196,10 @@ export default function App() {
     )
   }
 
-  const handleCheckout = async (e) => {
-    e.preventDefault()
-    const form = new FormData(e.target)
-    const order = {
-      items: cart,
-      subtotal,
-      customer: {
-        name: form.get('name'),
-        email: form.get('email'),
-        address: form.get('address'),
-      },
-      createdAt: new Date().toISOString(),
-    }
-    try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(order),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        setCart([])
-        nav('order-confirmed')
-      } else {
-        alert(data.error || 'Order failed. Try again.')
-      }
-    } catch {
-      alert('Could not reach the server.')
-    }
+  const handleOrderPlaced = (orderId) => {
+    setOrderId(orderId)
+    setCart([])
+    nav('order-confirmed')
   }
 
   const activeProduct = products.find((p) => p.id === productIdFromHash())
@@ -235,18 +219,23 @@ export default function App() {
             removeFromCart={removeFromCart}
             changeQty={changeQty}
             subtotal={subtotal}
+            delivery={delivery}
+            total={total}
+            amountToFreeDelivery={amountToFreeDelivery}
             nav={nav}
           />
         )}
         {page === 'checkout' && (
-          <Checkout
+          <CheckoutForm
             cart={cart}
             subtotal={subtotal}
-            onSubmit={handleCheckout}
-            nav={nav}
+            delivery={delivery}
+            total={total}
+            onBack={() => nav('cart')}
+            onSuccess={handleOrderPlaced}
           />
         )}
-        {page === 'order-confirmed' && <OrderConfirmed nav={nav} />}
+        {page === 'order-confirmed' && <OrderConfirmed nav={nav} orderId={orderId} />}
       </main>
       <Footer />
     </div>
@@ -403,7 +392,7 @@ function Shop({ products, nav }) {
             <h3>{p.name}</h3>
             <p className="product-desc">{p.desc}</p>
             <div className="product-footer">
-              <span className="price">From ${p.basePrice}</span>
+              <span className="price">From {formatPrice(p.basePrice)}</span>
               <button className="add-btn" onClick={() => nav(`product-${p.id}`)}>
                 Choose options
               </button>
@@ -415,7 +404,17 @@ function Shop({ products, nav }) {
   )
 }
 
-function Cart({ cart, removeFromCart, changeQty, subtotal, nav }) {
+function Cart({
+  cart,
+  removeFromCart,
+  changeQty,
+  subtotal,
+  delivery,
+  total,
+  amountToFreeDelivery,
+  nav,
+}) {
+  const freeDelivery = delivery === 0
   return (
     <section className="cart">
       <div className="section-inner cart-header">
@@ -437,33 +436,33 @@ function Cart({ cart, removeFromCart, changeQty, subtotal, nav }) {
             {cart.map((item, i) => {
               const p = products.find((p) => p.id === item.productId)
               const img = item.image || (p ? p.images[0] : '/images/scentquest-1-hero.png')
+              const colorLabel = p?.colors.find((c) => c.value === item.color)?.label || item.color
               return (
                 <div key={i} className="cart-item">
                   <img className="cart-item-img" src={img} alt={item.name} />
                   <div className="cart-item-info">
                     <div className="cart-item-name">{item.name}</div>
                     <div className="cart-item-meta">
-                      {item.size} • {item.color} • {item.scent}
+                      Size: {item.size} · Color: {colorLabel} · Scent: {item.scent}
                     </div>
                     {item.addOns.length > 0 && (
                       <div className="cart-item-addons">
                         + {item.addOns.join(', ')}
                       </div>
                     )}
-                    <div className="cart-item-price">${item.unitPrice}</div>
+                    <div className="cart-item-price">{formatPrice(item.unitPrice)}</div>
                   </div>
                   <div className="cart-item-controls">
-                    <button
-                      className="qty-btn"
-                      onClick={() => changeQty(i, -1)}
-                      disabled={item.qty <= 1}
-                    >
-                      −
-                    </button>
-                    <span className="qty">{item.qty}</span>
-                    <button className="qty-btn" onClick={() => changeQty(i, 1)}>
-                      +
-                    </button>
+                    <div className="qty-picker">
+                      <button
+                        onClick={() => changeQty(i, -1)}
+                        disabled={item.qty <= 1}
+                      >
+                        −
+                      </button>
+                      <span className="qty">{item.qty}</span>
+                      <button onClick={() => changeQty(i, 1)}>+</button>
+                    </div>
                     <button className="remove-btn" onClick={() => removeFromCart(i)}>
                       Remove
                     </button>
@@ -472,10 +471,36 @@ function Cart({ cart, removeFromCart, changeQty, subtotal, nav }) {
               )
             })}
           </div>
+
           <div className="cart-total">
-            <div className="total-row"><span>Subtotal</span><span>${subtotal}</span></div>
-            <button className="checkout-btn" disabled={cart.length === 0} onClick={() => nav('checkout')}>
-              Proceed to checkout
+            <div className={`delivery-note ${freeDelivery ? 'is-free' : ''}`}>
+              {freeDelivery ? (
+                <>
+                  <span className="delivery-check">✓</span>
+                  <span>Free delivery unlocked on this order</span>
+                </>
+              ) : (
+                <span>
+                  Add <strong>{formatPrice(amountToFreeDelivery)}</strong> more for free delivery
+                </span>
+              )}
+            </div>
+            <div className="total-row">
+              <span>Subtotal</span>
+              <span>{formatPrice(subtotal)}</span>
+            </div>
+            <div className="total-row">
+              <span>Delivery</span>
+              <span className={freeDelivery ? 'free-text' : ''}>
+                {freeDelivery ? 'FREE' : formatPrice(delivery)}
+              </span>
+            </div>
+            <div className="total-row total-grand">
+              <span>Total</span>
+              <span>{formatPrice(total)}</span>
+            </div>
+            <button className="checkout-btn" onClick={() => nav('checkout')}>
+              Checkout · {formatPrice(total)}
             </button>
           </div>
         </>
@@ -484,56 +509,19 @@ function Cart({ cart, removeFromCart, changeQty, subtotal, nav }) {
   )
 }
 
-function Checkout({ cart, subtotal, onSubmit, nav }) {
-  return (
-    <section className="checkout">
-      <div className="section-inner checkout-header">
-        <h1>Checkout</h1>
-        <button className="btn btn-outline" onClick={() => nav('cart')}>
-          ← Back to cart
-        </button>
-      </div>
-      <form onSubmit={onSubmit} className="checkout-form">
-        <div className="form-group">
-          <label>Name</label>
-          <input name="name" type="text" required />
-        </div>
-        <div className="form-group">
-          <label>Email</label>
-          <input name="email" type="email" required />
-        </div>
-        <div className="form-group">
-          <label>Address</label>
-          <textarea name="address" rows={3} required />
-        </div>
-        <div className="order-summary">
-          <h3>Order Summary</h3>
-          {cart.map((item) => (
-            <div key={item.productId + '-' + item.size} className="summary-item">
-              <span>{item.name} × {item.qty}</span>
-              <span>${item.unitPrice * item.qty}</span>
-            </div>
-          ))}
-          <div className="summary-total">
-            <span>Total</span>
-            <span>${subtotal}</span>
-          </div>
-        </div>
-        <button type="submit" className="place-order-btn">
-          Place Order
-        </button>
-      </form>
-    </section>
-  )
-}
-
-function OrderConfirmed({ nav }) {
+function OrderConfirmed({ nav, orderId }) {
   return (
     <section className="confirmed">
       <div className="confirm-card">
         <span className="confirm-icon">✅</span>
         <h1>Order Confirmed!</h1>
-        <p>Thank you. Your ScentQuest order has been placed.</p>
+        {orderId && (
+          <p className="confirm-order-id">
+            Order ID <strong>{orderId}</strong>
+          </p>
+        )}
+        <p>Thank you. We will call you on your phone number to confirm delivery.</p>
+        <p className="confirm-cod">Paying with Cash on Delivery.</p>
         <button className="continue-shopping" onClick={() => nav('home')}>
           Continue shopping
         </button>
