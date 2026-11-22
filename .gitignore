@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*
+.hwa/
+init.py
+init (*).py
+submit.py
+hwa-start.*
