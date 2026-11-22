@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatPrice } from '../lib/format.js'
 
 export default function ProductPage({ product, onAddToCart }) {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0].label)
@@ -63,7 +64,7 @@ export default function ProductPage({ product, onAddToCart }) {
                   className={`size-btn ${selectedSize === s.label ? 'active' : ''}`}
                   onClick={() => setSelectedSize(s.label)}
                 >
-                  {s.label} {s.priceMod > 0 ? `+$${s.priceMod}` : ''}
+                  {s.label} {s.priceMod > 0 ? `+${formatPrice(s.priceMod)}` : ''}
                 </button>
               ))}
             </div>
@@ -93,7 +94,7 @@ export default function ProductPage({ product, onAddToCart }) {
                   className={`scent-btn ${selectedScent === s.label ? 'active' : ''}`}
                   onClick={() => setSelectedScent(s.label)}
                 >
-                  {s.label} {s.priceMod > 0 ? `+$${s.priceMod}` : ''}
+                  {s.label} {s.priceMod > 0 ? `+${formatPrice(s.priceMod)}` : ''}
                 </button>
               ))}
             </div>
@@ -109,7 +110,7 @@ export default function ProductPage({ product, onAddToCart }) {
                     checked={selectedAddOns.includes(a.id)}
                     onChange={() => toggleAddOn(a.id)}
                   />
-                  <span>{a.label} {a.price > 0 ? `+$${a.price}` : ''}</span>
+                  <span>{a.label} {a.price > 0 ? `+${formatPrice(a.price)}` : ''}</span>
                 </label>
               ))}
             </div>
@@ -139,11 +140,11 @@ export default function ProductPage({ product, onAddToCart }) {
           <div className="price-summary">
             <div className="price-row">
               <span>Unit price</span>
-              <span>${unitPrice}</span>
+              <span>{formatPrice(unitPrice)}</span>
             </div>
             <div className="price-row total">
               <span>Total × {quantity}</span>
-              <span>${totalPrice}</span>
+              <span>{formatPrice(totalPrice)}</span>
             </div>
           </div>
 
