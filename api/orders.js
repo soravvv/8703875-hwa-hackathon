@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto'
-
-const orders = []
+import { getOrder, listOrders, saveOrder } from './_store.js'
 
 const FREE_DELIVERY_THRESHOLD = 4999
 const DELIVERY_FEE = 199
@@ -154,7 +153,7 @@ function buildOrder(body) {
   }
 }
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -167,12 +166,13 @@ export default function handler(req, res) {
   if (req.method === 'GET') {
     const id = req.query?.id
     if (id) {
-      const order = orders.find((o) => o.id === id)
+      const order = await getOrder(id)
       if (!order) {
         return res.status(404).json({ error: 'Order not found' })
       }
       return res.status(200).json({ order })
     }
+    const orders = await listOrders()
     return res.status(200).json({ orders, count: orders.length })
   }
 
@@ -213,7 +213,7 @@ export default function handler(req, res) {
 
   try {
     const order = buildOrder(body)
-    orders.push(order)
+    await saveOrder(order)
     return res.status(201).json({
       ok: true,
       orderId: order.id,
