@@ -28,7 +28,7 @@ export default function handler(req, res) {
     }
     orders.push(order)
     return res.status(200).json({ ok: true, orderId: order.id })
-  } catch (err) {
+  } catch {
     return res.status(400).json({ error: 'Invalid order' })
   }
 }

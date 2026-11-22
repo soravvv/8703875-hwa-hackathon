@@ -1,3 +1,5 @@
+const year = new Date().getFullYear()
+
 export default function Footer() {
   return (
     <footer className="footer">
@@ -12,7 +14,7 @@ export default function Footer() {
           <a href="/checkout">Checkout</a>
         </div>
         <div className="footer-note">
-          &copy; {new Date().getFullYear()} ScentQuest. Demo store.
+          &copy; {year} ScentQuest. Demo store.
         </div>
       </div>
     </footer>

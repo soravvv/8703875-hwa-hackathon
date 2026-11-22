@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 const navLinks = [
   { to: '/', label: 'Shop' },
   { to: '/cart', label: 'Cart' },

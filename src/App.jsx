@@ -213,7 +213,7 @@ export default function App() {
       } else {
         alert(data.error || 'Order failed. Try again.')
       }
-    } catch (err) {
+    } catch {
       alert('Could not reach the server.')
     }
   }
