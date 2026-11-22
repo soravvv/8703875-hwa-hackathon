@@ -8,28 +8,28 @@ const products = [
     name: 'Snuffle Snack Mat',
     price: 24,
     desc: 'Hide treats in the fleece folds for nose-work fun.',
-    image: '🧺',
+    image: '/images/scentquest-2-lifestyle-beagle.png',
   },
   {
     id: 'scent-puzzle',
     name: 'Scent Puzzle Box',
     price: 18,
     desc: 'Slide covers to reveal hidden scented compartments.',
-    image: '🧩',
+    image: '/images/scentquest-3-inside-cutaway.png',
   },
   {
     id: 'trail-kit',
     name: 'Backyard Trail Kit',
     price: 32,
     desc: 'Scent markers to lay a tracking trail outdoors.',
-    image: '🏞️',
+    image: '/images/scentquest-4-colours.png',
   },
   {
     id: 'lick-mat',
     name: 'Calm Lick Mat',
     price: 12,
     desc: 'Spread peanut butter for a soothing lick session.',
-    image: '🐾',
+    image: '/images/scentquest-5-scent-capsules.png',
   },
 ]
 
@@ -132,7 +132,7 @@ function Shop({ products, addToCart }) {
       <div className="product-grid">
         {products.map((p) => (
           <article key={p.id} className="product-card">
-            <div className="product-image">{p.image}</div>
+            <img className="product-img" src={p.image} alt={p.name} />
             <h3>{p.name}</h3>
             <p className="product-desc">{p.desc}</p>
             <div className="product-footer">
@@ -160,7 +160,7 @@ function Cart({ cart, removeFromCart, changeQty, subtotal }) {
               return (
                 <div key={item.id} className="cart-item">
                   <div className="cart-item-info">
-                    <span className="cart-item-image">{p.image}</span>
+                    <img className="cart-item-img" src={p.image} alt={p.name} />
                     <div>
                       <div className="cart-item-name">{p.name}</div>
                       <div className="cart-item-price">${p.price}</div>
