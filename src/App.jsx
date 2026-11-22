@@ -3,8 +3,22 @@ import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import ProductPage from './components/ProductPage.jsx'
 import CheckoutForm from './components/CheckoutForm.jsx'
+import {
+  DashboardPage,
+  OrderDetailsPage,
+  OrdersPage,
+  SignInPage,
+  SignUpPage,
+} from './components/AccountPages.jsx'
 import { AboutPage, FaqPage, SafetyPage } from './components/InfoPages.jsx'
 import { formatPrice } from './lib/format.js'
+import {
+  clearUserSession,
+  getUserOrders,
+  loadUserSession,
+  saveUserOrder,
+  saveUserSession,
+} from './lib/account.js'
 
 const FREE_DELIVERY_THRESHOLD = 4999
 const DELIVERY_FEE = 199
@@ -122,6 +136,11 @@ const PAGE_TITLES = {
   cart: 'Your cart — ScentQuest',
   checkout: 'Checkout — ScentQuest',
   'order-confirmed': 'Order confirmed — ScentQuest',
+  'sign-in': 'Sign in — ScentQuest',
+  signup: 'Create your account — ScentQuest',
+  dashboard: 'Your dashboard — ScentQuest',
+  orders: 'My orders — ScentQuest',
+  'order-details': 'Order details — ScentQuest',
   faq: 'FAQ — ScentQuest',
   safety: 'Safety guide — ScentQuest',
   about: 'About ScentQuest',
@@ -130,7 +149,12 @@ const PAGE_TITLES = {
 
 function routeFromHash(hash) {
   const h = String(hash || '').replace(/^#/, '')
+  if (h.startsWith('order-details-')) return 'order-details'
   if (h.startsWith('product-')) return 'product'
+  if (h === 'sign-in') return 'sign-in'
+  if (h === 'signup') return 'signup'
+  if (h === 'dashboard') return 'dashboard'
+  if (h === 'orders') return 'orders'
   if (h === 'cart') return 'cart'
   if (h === 'checkout') return 'checkout'
   if (h === 'order-confirmed') return 'order-confirmed'
@@ -154,6 +178,17 @@ export default function App() {
   })
   const [page, setPage] = useState(() => routeFromHash(window.location.hash))
   const [placedOrder, setPlacedOrder] = useState(null)
+  const [user, setUser] = useState(() => loadUserSession())
+  const [userOrders, setUserOrders] = useState(() => {
+    const session = loadUserSession()
+    return session ? getUserOrders(session.email) : []
+  })
+  const protectedPages = ['dashboard', 'orders', 'order-details']
+  const effectivePage = protectedPages.includes(page) && !user
+    ? 'sign-in'
+    : user && (page === 'sign-in' || page === 'signup')
+      ? 'dashboard'
+      : page
 
   useEffect(() => {
     try {
@@ -170,12 +205,12 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    document.title = PAGE_TITLES[page] || PAGE_TITLES.home
-  }, [page])
+    document.title = PAGE_TITLES[effectivePage] || PAGE_TITLES.home
+  }, [effectivePage])
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [page])
+  }, [effectivePage])
 
   const navigate = useCallback((to) => {
     const target = !to || to === 'home' ? '' : to
@@ -196,6 +231,9 @@ export default function App() {
 
   const productIdFromHash = () =>
     window.location.hash.replace(/^#/, '').replace(/^product-/, '')
+
+  const orderIdFromHash = () =>
+    window.location.hash.replace(/^#/, '').replace(/^order-details-/, '')
 
   const addToCart = (item) => {
     setCart((prev) => {
@@ -223,40 +261,96 @@ export default function App() {
   }
 
   const handleOrderPlaced = ({ orderId, order }) => {
-    setPlacedOrder(
-      order || {
-        id: orderId,
-        items: [],
-        subtotal: 0,
-        delivery: 0,
-        total: 0,
-        customer: {},
-      }
-    )
+    const confirmedOrder = order || {
+      id: orderId,
+      items: [],
+      subtotal: 0,
+      delivery: 0,
+      total: 0,
+      customer: {},
+    }
+    setPlacedOrder(confirmedOrder)
+    saveUserOrder(confirmedOrder)
+    if (user) setUserOrders(getUserOrders(user.email))
     setCart([])
     navigate('order-confirmed')
   }
 
+  const handleAuthenticated = (nextUser) => {
+    saveUserSession(nextUser)
+    setUser(nextUser)
+    setUserOrders(getUserOrders(nextUser.email))
+    navigate('dashboard')
+  }
+
+  const handleLogout = () => {
+    clearUserSession()
+    setUser(null)
+    setUserOrders([])
+    navigate('home')
+  }
+
+  const handleReorder = (order) => {
+    for (const item of order?.items || []) {
+      addToCart({ ...item, qty: 1 })
+    }
+    navigate('cart')
+  }
+
   const activeProduct = products.find((p) => p.id === productIdFromHash())
+  const selectedOrder = userOrders.find((order) => order.id === orderIdFromHash())
 
   return (
     <div className="app">
-      <Header cartCount={cartCount} onNavigate={navigate} />
+      <Header cartCount={cartCount} onNavigate={navigate} user={user} />
 
-      {page === 'home' ? (
+      {effectivePage === 'home' ? (
         <main className="landing">
           <LandingPage navigate={navigate} />
         </main>
       ) : (
         <main className="page">
-          {page === 'shop' && <Shop products={products} navigate={navigate} />}
-          {page === 'product' &&
+          {effectivePage === 'sign-in' && (
+            <SignInPage navigate={navigate} onAuthenticated={handleAuthenticated} />
+          )}
+          {effectivePage === 'signup' && (
+            <SignUpPage navigate={navigate} onAuthenticated={handleAuthenticated} />
+          )}
+          {effectivePage === 'dashboard' && user && (
+            <DashboardPage
+              user={user}
+              orders={userOrders}
+              navigate={navigate}
+              onLogout={handleLogout}
+              onReorder={handleReorder}
+            />
+          )}
+          {effectivePage === 'orders' && user && (
+            <OrdersPage
+              user={user}
+              orders={userOrders}
+              navigate={navigate}
+              onLogout={handleLogout}
+              onReorder={handleReorder}
+            />
+          )}
+          {effectivePage === 'order-details' && user && (
+            <OrderDetailsPage
+              user={user}
+              order={selectedOrder}
+              navigate={navigate}
+              onLogout={handleLogout}
+              onReorder={handleReorder}
+            />
+          )}
+          {effectivePage === 'shop' && <Shop products={products} navigate={navigate} />}
+          {effectivePage === 'product' &&
             (activeProduct ? (
               <ProductPage product={activeProduct} onAddToCart={addToCart} navigate={navigate} />
             ) : (
               <NotFound navigate={navigate} />
             ))}
-          {page === 'cart' && (
+          {effectivePage === 'cart' && (
             <Cart
               cart={cart}
               removeFromCart={removeFromCart}
@@ -268,7 +362,7 @@ export default function App() {
               navigate={navigate}
             />
           )}
-          {page === 'checkout' && (
+          {effectivePage === 'checkout' && (
             <CheckoutForm
               cart={cart}
               subtotal={subtotal}
@@ -278,17 +372,17 @@ export default function App() {
               onSuccess={handleOrderPlaced}
             />
           )}
-          {page === 'order-confirmed' && (
+          {effectivePage === 'order-confirmed' && (
             <OrderConfirmed navigate={navigate} order={placedOrder} />
           )}
-          {page === 'faq' && <FaqPage navigate={navigate} />}
-          {page === 'safety' && <SafetyPage navigate={navigate} />}
-          {page === 'about' && <AboutPage products={products} navigate={navigate} />}
-          {page === 'not-found' && <NotFound navigate={navigate} />}
+          {effectivePage === 'faq' && <FaqPage navigate={navigate} />}
+          {effectivePage === 'safety' && <SafetyPage navigate={navigate} />}
+          {effectivePage === 'about' && <AboutPage products={products} navigate={navigate} />}
+          {effectivePage === 'not-found' && <NotFound navigate={navigate} />}
         </main>
       )}
 
-      <Footer navigate={navigate} />
+      <Footer navigate={navigate} user={user} />
     </div>
   )
 }

@@ -12,7 +12,18 @@ const companyLinks = [
   { to: 'safety', label: 'Safety' },
 ]
 
-export default function Footer({ navigate }) {
+export default function Footer({ navigate, user }) {
+  const accountLinks = user
+    ? [
+        { to: 'dashboard', label: 'My account' },
+        { to: 'orders', label: 'My orders' },
+        { to: 'shop', label: 'Shop again' },
+      ]
+    : [
+        { to: 'sign-in', label: 'Sign in' },
+        { to: 'signup', label: 'Create account' },
+      ]
+
   return (
     <footer className="footer">
       <div className="section-inner footer-inner">
@@ -41,6 +52,18 @@ export default function Footer({ navigate }) {
           <h4>Help</h4>
           <ul>
             {companyLinks.map((l) => (
+              <li key={l.to}>
+                <button className="link-btn" onClick={() => navigate(l.to)}>
+                  {l.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="footer-col">
+          <h4>Account</h4>
+          <ul>
+            {accountLinks.map((l) => (
               <li key={l.to}>
                 <button className="link-btn" onClick={() => navigate(l.to)}>
                   {l.label}

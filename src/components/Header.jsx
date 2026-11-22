@@ -5,7 +5,14 @@ const navLinks = [
   { to: 'safety', label: 'Safety' },
 ]
 
-export default function Header({ cartCount, onNavigate }) {
+export default function Header({ cartCount, onNavigate, user }) {
+  const accountInitials = String(user?.name || '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('')
+
   return (
     <header className="header">
       <div className="header-inner">
@@ -28,6 +35,31 @@ export default function Header({ cartCount, onNavigate }) {
           ))}
         </nav>
         <div className="header-actions">
+          <button
+            className={`account-btn ${user ? 'is-signed-in' : ''}`}
+            onClick={() => onNavigate(user ? 'dashboard' : 'sign-in')}
+            aria-label={user ? `Your account, ${user.name}` : 'Sign in to your account'}
+            title={user ? 'Your account' : 'Sign in'}
+          >
+            {user ? (
+              <span className="header-avatar">{accountInitials}</span>
+            ) : (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+              </svg>
+            )}
+          </button>
           <button
             className="cart-btn"
             onClick={() => onNavigate('cart')}
