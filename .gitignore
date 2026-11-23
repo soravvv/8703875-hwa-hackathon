@@ -29,3 +29,6 @@ init.py
 init (*).py
 submit.py
 hwa-start.*
+node_modules/
+.vercel/
+dist/
