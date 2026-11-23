@@ -212,6 +212,116 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [effectivePage])
 
+  useEffect(() => {
+    const revealSelector = [
+      '.hero-content > *',
+      '.hero-visual',
+      '.problem-card',
+      '.step',
+      '.level-card',
+      '.review-card',
+      '.product-card',
+      '.product-gallery',
+      '.product-info',
+      '.about-kit',
+      '.safety-card',
+      '.about-value',
+      '.faq-item',
+      '.cart-item',
+      '.cart-total',
+      '.checkout-form',
+      '.order-summary',
+      '.auth-shell',
+      '.account-sidebar',
+      '.account-card',
+      '.order-list-card',
+      '.confirm-card',
+      '.not-found-card',
+    ].join(', ')
+    const tiltSelector = [
+      '.hero-visual',
+      '.product-card',
+      '.problem-card',
+      '.step',
+      '.level-card',
+      '.review-card',
+      '.about-kit',
+      '.safety-card',
+      '.about-value',
+      '.faq-item',
+      '.cart-item',
+      '.account-card',
+      '.order-list-card',
+      '.confirm-card',
+      '.not-found-card',
+      '.auth-shell',
+    ].join(', ')
+
+    const revealElements = [...document.querySelectorAll(revealSelector)]
+    revealElements.forEach((element) => {
+      element.classList.add('reveal')
+      const siblings = element.parentElement ? [...element.parentElement.children] : []
+      const localIndex = Math.max(0, siblings.indexOf(element))
+      element.style.setProperty('--reveal-delay', `${(localIndex % 6) * 65}ms`)
+    })
+
+    let observer
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue
+            entry.target.classList.add('is-visible')
+            observer?.unobserve(entry.target)
+          }
+        },
+        { threshold: 0.08, rootMargin: '0px 0px -7% 0px' }
+      )
+      revealElements.forEach((element) => observer.observe(element))
+    } else {
+      revealElements.forEach((element) => element.classList.add('is-visible'))
+    }
+
+    const finePointer = window.matchMedia('(pointer: fine)').matches
+    const tiltElements = [...document.querySelectorAll(tiltSelector)]
+    const cleanups = []
+
+    for (const element of tiltElements) {
+      element.classList.add('motion-tilt')
+      const maxTilt = element.matches('.hero-visual, .auth-shell') ? 3 : 6
+
+      const handlePointerMove = (event) => {
+        if (!finePointer) return
+        const rect = element.getBoundingClientRect()
+        const x = (event.clientX - rect.left) / rect.width - 0.5
+        const y = (event.clientY - rect.top) / rect.height - 0.5
+        element.style.setProperty('--tilt-x', `${(-y * maxTilt).toFixed(2)}deg`)
+        element.style.setProperty('--tilt-y', `${(x * maxTilt).toFixed(2)}deg`)
+        element.style.setProperty('--glow-x', `${((x + 0.5) * 100).toFixed(1)}%`)
+        element.style.setProperty('--glow-y', `${((y + 0.5) * 100).toFixed(1)}%`)
+      }
+
+      const handlePointerLeave = () => {
+        element.style.setProperty('--tilt-x', '0deg')
+        element.style.setProperty('--tilt-y', '0deg')
+        element.style.setProperty('--glow-x', '50%')
+        element.style.setProperty('--glow-y', '50%')
+      }
+
+      element.addEventListener('pointermove', handlePointerMove, { passive: true })
+      element.addEventListener('pointerleave', handlePointerLeave)
+      cleanups.push(() => {
+        element.removeEventListener('pointermove', handlePointerMove)
+        element.removeEventListener('pointerleave', handlePointerLeave)
+      })
+    }
+
+    return () => {
+      observer?.disconnect()
+      for (const cleanup of cleanups) cleanup()
+    }
+  }, [effectivePage])
+
   const navigate = useCallback((to) => {
     const target = !to || to === 'home' ? '' : to
     const current = window.location.hash.replace(/^#/, '')
@@ -302,14 +412,19 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="motion-ambient" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
       <Header cartCount={cartCount} onNavigate={navigate} user={user} />
 
       {effectivePage === 'home' ? (
-        <main className="landing">
+        <main className="landing page-enter" key={effectivePage}>
           <LandingPage navigate={navigate} />
         </main>
       ) : (
-        <main className="page">
+        <main className="page page-enter" key={effectivePage}>
           {effectivePage === 'sign-in' && (
             <SignInPage navigate={navigate} onAuthenticated={handleAuthenticated} />
           )}

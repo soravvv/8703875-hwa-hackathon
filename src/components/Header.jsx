@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 const navLinks = [
   { to: 'shop', label: 'Shop' },
   { to: 'about', label: 'About' },
@@ -6,6 +8,7 @@ const navLinks = [
 ]
 
 export default function Header({ cartCount, onNavigate, user }) {
+  const progressRef = useRef(null)
   const accountInitials = String(user?.name || '')
     .split(' ')
     .filter(Boolean)
@@ -13,8 +16,29 @@ export default function Header({ cartCount, onNavigate, user }) {
     .map((part) => part[0].toUpperCase())
     .join('')
 
+  useEffect(() => {
+    const updateProgress = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight
+      const progress = scrollable > 0 ? window.scrollY / scrollable : 0
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${Math.min(1, Math.max(0, progress))})`
+      }
+    }
+
+    updateProgress()
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    window.addEventListener('resize', updateProgress)
+    return () => {
+      window.removeEventListener('scroll', updateProgress)
+      window.removeEventListener('resize', updateProgress)
+    }
+  }, [])
+
   return (
     <header className="header">
+      <span className="scroll-progress" aria-hidden="true">
+        <span ref={progressRef} />
+      </span>
       <div className="header-inner">
         <button
           className="logo"

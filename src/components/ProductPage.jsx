@@ -55,10 +55,10 @@ export default function ProductPage({ product, onAddToCart, navigate }) {
             {product.images.map((img, i) => (
               <button
                 key={i}
-                className={`thumb ${i === 0 ? 'active' : ''}`}
+                className={`thumb ${mainImage === img ? 'active' : ''}`}
                 onClick={() => setMainImage(img)}
                 aria-label={`View image ${i + 1} of ${product.name}`}
-                aria-pressed={i === 0}
+                aria-pressed={mainImage === img}
               >
                 <img src={img} alt="" />
               </button>
