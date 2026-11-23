@@ -117,16 +117,10 @@ const steps = [
   { num: '04', title: 'Repeat & level up', text: 'Move to harder puzzles as their scenting skills grow.' },
 ]
 
-const levels = [
-  { name: 'Beginner', desc: 'Easy finds for puppies and new sniffers.', badge: 'Puppy-friendly', image: '/images/scentquest-5-scent-capsules.png' },
-  { name: 'Intermediate', desc: 'Multi-step puzzles for curious adult dogs.', badge: 'Best seller', image: '/images/scentquest-2-lifestyle-beagle.png' },
-  { name: 'Advanced', desc: 'Complex trails and hidden compartments.', badge: 'For scent hounds', image: '/images/scentquest-3-inside-cutaway.png' },
-]
-
 const reviews = [
-  { name: 'Maya & Luna', stars: 5, text: 'Luna is calmer after her scent sessions. Best purchase this year.' },
-  { name: 'Carlos & Rex', stars: 5, text: 'The trail kit turned our backyard into a sniffing adventure.' },
-  { name: 'Priya & Milo', stars: 5, text: 'Milo loves the puzzle box. Finally something that keeps him busy.' },
+  { name: 'Maya & Luna', initials: 'ML', stars: 5, text: 'Luna is calmer after her scent sessions. Best purchase this year.' },
+  { name: 'Carlos & Rex', initials: 'CR', stars: 5, text: 'The trail kit turned our backyard into a sniffing adventure.' },
+  { name: 'Priya & Milo', initials: 'PM', stars: 5, text: 'Milo loves the puzzle box. Finally something that keeps him busy.' },
 ]
 
 const PAGE_TITLES = {
@@ -215,10 +209,18 @@ export default function App() {
   useEffect(() => {
     const revealSelector = [
       '.hero-content > *',
+      '.hero-title-gradient',
       '.hero-visual',
+      '.hero-proof-row',
+      '.home-proof-grid > article',
       '.problem-card',
+      '.problem-bento-card',
       '.step',
       '.level-card',
+      '.how-visual-panel',
+      '.showcase-card',
+      '.why-visual',
+      '.home-cta-card',
       '.review-card',
       '.product-card',
       '.product-gallery',
@@ -240,10 +242,16 @@ export default function App() {
     ].join(', ')
     const tiltSelector = [
       '.hero-visual',
+      '.home-proof-grid > article',
       '.product-card',
       '.problem-card',
+      '.problem-bento-card',
       '.step',
       '.level-card',
+      '.how-visual-panel',
+      '.showcase-card',
+      '.why-visual',
+      '.home-cta-visual',
       '.review-card',
       '.about-kit',
       '.safety-card',
@@ -288,7 +296,9 @@ export default function App() {
 
     for (const element of tiltElements) {
       element.classList.add('motion-tilt')
-      const maxTilt = element.matches('.hero-visual, .auth-shell') ? 3 : 6
+      const maxTilt = element.matches(
+        '.hero-visual, .auth-shell, .how-visual-panel, .why-visual, .home-cta-visual'
+      ) ? 3 : 6
 
       const handlePointerMove = (event) => {
         if (!finePointer) return
@@ -532,23 +542,48 @@ function LandingPage({ navigate }) {
   }
 
   return (
-    <>
-      <section className="hero">
+    <div className="home-page">
+      <section className="hero hero-cinematic">
+        <div className="hero-grid-lines" aria-hidden="true" />
+        <div className="hero-aurora hero-aurora-one" aria-hidden="true" />
+        <div className="hero-aurora hero-aurora-two" aria-hidden="true" />
         <div className="section-inner hero-inner">
           <div className="hero-content">
-            <span className="hero-kicker">New for curious dogs</span>
-            <h1>Scent-led play that tires them out.</h1>
+            <span className="hero-kicker hero-kicker-live">
+              <span className="hero-live-dot" aria-hidden="true" />
+              New · India’s smarter dog toys
+            </span>
+            <h1>
+              Turn their nose into
+              <span className="hero-title-gradient">their superpower.</span>
+            </h1>
             <p className="hero-tagline">
-              ScentQuest turns sniffing into a rewarding game — mental enrichment,
-              calmer dogs, happier homes.
+              Hide the scent. Let their instincts do the rest. ScentQuest turns
+              everyday sniffing into focused, rewarding play that leaves dogs calmer
+              and homes happier.
             </p>
             <div className="hero-actions">
-              <button className="btn btn-primary btn-lg" onClick={() => navigate('shop')}>
-                Shop ScentQuest
+              <button className="btn btn-primary btn-lg hero-primary-cta" onClick={() => navigate('shop')}>
+                Explore the kits
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
               </button>
               <button className="btn btn-outline btn-lg" onClick={scrollToHow}>
-                How it works
+                See how it works
+                <span className="hero-play-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="m9 7 8 5-8 5z" /></svg>
+                </span>
               </button>
+            </div>
+            <div className="hero-proof-row">
+              <div className="hero-proof-avatars" aria-hidden="true">
+                <span>ML</span><span>CR</span><span>PM</span><span>+</span>
+              </div>
+              <div>
+                <strong>Loved by curious dogs</strong>
+                <small>Join 2,000+ Indian pet parents</small>
+              </div>
             </div>
             <ul className="hero-trust">
               <li><span aria-hidden="true">✓</span> Free delivery over ₹4,999</li>
@@ -556,136 +591,452 @@ function LandingPage({ navigate }) {
               <li><span aria-hidden="true">✓</span> Food-grade materials</li>
             </ul>
           </div>
-          <div className="hero-visual">
-            <div className="hero-image-wrap">
+
+          <div className="hero-visual hero-stage">
+            <div className="hero-stage-floor" aria-hidden="true" />
+            <div className="hero-orbit hero-orbit-one" aria-hidden="true">
+              <span className="hero-orbit-dot" />
+            </div>
+            <div className="hero-orbit hero-orbit-two" aria-hidden="true">
+              <span className="hero-orbit-dot" />
+            </div>
+            <div className="hero-image-wrap hero-image-frame">
               <img
                 src="/images/scentquest-1-hero.png"
                 alt="A ScentQuest scent puzzle with capsules and compartments"
                 className="hero-img"
               />
+              <span className="hero-image-shine" aria-hidden="true" />
             </div>
             <div className="hero-badge">
               <span className="hero-badge-label">Best seller</span>
               <span className="hero-badge-price">From {formatPrice(products[0].basePrice)}</span>
             </div>
+            <div className="hero-float-card hero-float-card-top">
+              <span className="hero-float-icon hero-float-icon-green" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                  <path d="M9.5 4.5A3.5 3.5 0 0 0 6 8v1.5A3.5 3.5 0 0 0 9.5 13H10v2.5A4.5 4.5 0 0 0 14.5 20H15a3 3 0 0 0 3-3v-3.5a4.5 4.5 0 0 0-4.5-4.5H12V7.5A3 3 0 0 0 9.5 4.5Z" />
+                  <path d="M5 12.5a3 3 0 0 0 0 6h1.5a3 3 0 0 0 3-3v-1.5a3 3 0 0 0-3-3H5Z" />
+                </svg>
+              </span>
+              <span>
+                <small>Mental enrichment</small>
+                <strong>Built for curious noses</strong>
+              </span>
+            </div>
+            <div className="hero-float-card hero-float-card-bottom">
+              <span className="hero-play-ring" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="12" cy="12" r="8" />
+                  <path d="M12 8v4l3 2" />
+                </svg>
+              </span>
+              <span>
+                <small>Focused play</small>
+                <strong>15–20 minute sessions</strong>
+              </span>
+            </div>
+            <span className="hero-material-chip hero-material-chip-one">Food-grade</span>
+            <span className="hero-material-chip hero-material-chip-two">No essential oils</span>
+          </div>
+        </div>
+        <div className="hero-marquee" aria-hidden="true">
+          <div className="hero-marquee-track">
+            <span>Nose-led play</span><i /><span>Mental enrichment</span><i /><span>Food-grade materials</span><i /><span>Calmer dogs</span><i /><span>Cash on delivery</span><i />
+            <span>Nose-led play</span><i /><span>Mental enrichment</span><i /><span>Food-grade materials</span><i /><span>Calmer dogs</span><i /><span>Cash on delivery</span><i />
           </div>
         </div>
       </section>
 
-      <section id="the-problem" className="problem">
+      <section className="home-proof-strip" aria-label="ScentQuest highlights">
+        <div className="section-inner home-proof-grid">
+          <article>
+            <span className="home-proof-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M4 17h16M6 13h12M8 9h8M10 5h4" />
+              </svg>
+            </span>
+            <span><strong>3 levels</strong><small>Grow with their skills</small></span>
+          </article>
+          <article>
+            <span className="home-proof-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M12 3 4 7v5c0 4.8 3.4 7.8 8 9 4.6-1.2 8-4.2 8-9V7z" />
+                <path d="m9 12 2 2 4-5" />
+              </svg>
+            </span>
+            <span><strong>Food-grade</strong><small>Made for safe play</small></span>
+          </article>
+          <article>
+            <span className="home-proof-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v10M15 9.5c0-1.2-1.1-2-2.5-2S10 8.3 10 9.5 11 12 13 12s3 .9 3 2.2-1.3 2.3-3 2.3-3-.8-3-2" />
+              </svg>
+            </span>
+            <span><strong>Cash on delivery</strong><small>Pay when it arrives</small></span>
+          </article>
+          <article>
+            <span className="home-proof-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" />
+                <circle cx="7" cy="19" r="2" /><circle cx="18" cy="19" r="2" />
+              </svg>
+            </span>
+            <span><strong>Free delivery</strong><small>On orders over ₹4,999</small></span>
+          </article>
+        </div>
+      </section>
+
+      <section id="the-problem" className="problem home-problem">
         <div className="section-inner">
-          <span className="section-kicker">The problem</span>
-          <h2>Dogs are bored. Bored dogs misbehave.</h2>
-          <div className="problem-grid">
-            <div className="problem-card">
-              <span className="problem-num">1</span>
-              <h3>Too much energy</h3>
-              <p>Walks alone don’t tire out a dog that was bred to sniff and hunt.</p>
+          <div className="home-section-heading">
+            <div>
+              <span className="section-kicker">The nose knows</span>
+              <h2>A bored nose is a problem.<br />A scent game is the answer.</h2>
             </div>
-            <div className="problem-card">
-              <span className="problem-num">2</span>
-              <h3>Destructive habits</h3>
-              <p>Chewed shoes, dug gardens, and barking often come from underused noses.</p>
+            <p>
+              Dogs were built to track. When that instinct has no job, energy turns
+              into chewing, barking and restless behaviour. Scent work gives it a
+              purpose.
+            </p>
+          </div>
+          <div className="problem-bento">
+            <article className="problem-bento-card problem-bento-energy">
+              <span className="bento-index">01 / Energy</span>
+              <div className="bento-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                  <path d="M13 2 5 13h6l-1 9 8-12h-6z" />
+                </svg>
+              </div>
+              <h3>Too much pent-up energy</h3>
+              <p>A long walk may still leave a scent-driven dog searching for more to do.</p>
+              <div className="energy-bars" aria-hidden="true">
+                <span /><span /><span /><span /><span />
+              </div>
+            </article>
+
+            <article className="problem-bento-card problem-bento-habits">
+              <span className="bento-index">02 / Habits</span>
+              <div className="bento-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                  <path d="M8 11V6a2 2 0 0 1 4 0v4-2a2 2 0 0 1 4 0v3-1a2 2 0 0 1 4 0v5c0 4-3 7-7 7h-1c-2 0-3.5-1-5-2.5L4 15a2 2 0 0 1 3-2l1 1v-3Z" />
+                </svg>
+              </div>
+              <h3>Destructive habits begin</h3>
+              <p>Chewed shoes, dug gardens and restless barking often start with an underused nose.</p>
+            </article>
+
+            <article className="problem-bento-card problem-bento-focus">
+              <span className="bento-index">03 / Focus</span>
+              <div className="bento-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                  <circle cx="12" cy="12" r="8" />
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                </svg>
+              </div>
+              <h3>Physical play is not enough</h3>
+              <p>Focused scent challenges give the brain a focused, rewarding task.</p>
+              <div className="focus-radar" aria-hidden="true">
+                <span /><span /><span /><i />
+              </div>
+            </article>
+
+            <article className="problem-bento-card problem-bento-solution">
+              <span className="bento-index">The smart swap</span>
+              <div>
+                <span className="solution-chip">One small game</span>
+                <h3>A calmer dog starts with a better outlet.</h3>
+                <p>Hide a treat, let them search, then celebrate the find.</p>
+              </div>
+              <button className="solution-arrow" onClick={() => navigate('shop')} aria-label="Explore ScentQuest kits">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="how-it-works home-how">
+        <div className="section-inner">
+          <div className="home-section-heading home-how-heading">
+            <div>
+              <span className="section-kicker">How it works</span>
+              <h2>Four steps. One very happy nose.</h2>
             </div>
-            <div className="problem-card">
-              <span className="problem-num">3</span>
-              <h3>Not enough mental work</h3>
-              <p>Physical exercise isn’t enough — scent work is what genuinely settles them.</p>
+            <p>
+              Each session follows the same simple rhythm, so your dog always knows
+              what to do next—and feels brilliant when they solve it.
+            </p>
+          </div>
+
+          <div className="how-layout">
+            <div className="how-visual-panel">
+              <div className="how-panel-label">
+                <span className="how-panel-live" aria-hidden="true" />
+                Live scent tracking
+              </div>
+              <div className="how-radar" aria-hidden="true">
+                <span className="how-radar-ring radar-ring-one" />
+                <span className="how-radar-ring radar-ring-two" />
+                <span className="how-radar-ring radar-ring-three" />
+                <span className="how-radar-sweep" />
+                <span className="how-radar-core">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                    <path d="M8 11V6a2 2 0 0 1 4 0v4-2a2 2 0 0 1 4 0v3-1a2 2 0 0 1 4 0v5c0 4-3 7-7 7h-1c-2 0-3.5-1-5-2.5L4 15a2 2 0 0 1 3-2l1 1v-3Z" />
+                  </svg>
+                </span>
+                <i className="how-scent-particle particle-one" />
+                <i className="how-scent-particle particle-two" />
+                <i className="how-scent-particle particle-three" />
+              </div>
+              <div className="how-session-card">
+                <span>
+                  <small>Typical session</small>
+                  <strong>15–20 minutes</strong>
+                </span>
+                <span className="how-session-wave" aria-hidden="true">
+                  <i /><i /><i /><i /><i />
+                </span>
+              </div>
+            </div>
+
+            <div className="steps steps-timeline">
+              {steps.map((s, index) => (
+                <article
+                  key={s.num}
+                  className="step"
+                  style={{ '--step-progress': `${(index + 1) * 25}%` }}
+                >
+                  <div className="step-timeline-node">
+                    <span className="step-num">{s.num}</span>
+                  </div>
+                  <div className="step-copy">
+                    <span className="step-label">Step {index + 1}</span>
+                    <h3>{s.title}</h3>
+                    <p>{s.text}</p>
+                    <span className="step-progress" aria-hidden="true"><i /></span>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" className="how-it-works">
+      <section className="levels home-showcase">
         <div className="section-inner">
-          <span className="section-kicker">How it works</span>
-          <h2>Sniff, find, reward. Repeat.</h2>
-          <div className="steps">
-            {steps.map((s) => (
-              <div key={s.num} className="step">
-                <span className="step-num">{s.num}</span>
-                <div>
-                  <h3>{s.title}</h3>
-                  <p>{s.text}</p>
+          <div className="home-section-heading showcase-heading">
+            <div>
+              <span className="section-kicker">Choose your adventure</span>
+              <h2>Three kits. Endless discoveries.</h2>
+            </div>
+            <button className="btn btn-outline" onClick={() => navigate('shop')}>
+              View the full collection
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="showcase-grid">
+            {products.map((product, index) => (
+              <article
+                key={product.id}
+                className={`showcase-card showcase-card-${index + 1}`}
+                style={{
+                  '--float-delay': `${index * -1.8}s`,
+                  '--float-distance': `${9 + index * 4}px`,
+                }}
+              >
+                <button
+                  className="showcase-media"
+                  onClick={() => navigate(`product-${product.id}`)}
+                  aria-label={`View ${product.name}`}
+                >
+                  <span className="showcase-number" aria-hidden="true">0{index + 1}</span>
+                  <span className="showcase-orbit showcase-orbit-one" aria-hidden="true" />
+                  <span className="showcase-orbit showcase-orbit-two" aria-hidden="true" />
+                  <img src={product.images[0]} alt={product.name} loading="lazy" />
+                  <span className="showcase-cta">
+                    View kit
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </span>
+                </button>
+                <div className="showcase-body">
+                  <div className="showcase-meta">
+                    <span>{product.sizes[0].label}</span>
+                    <span>{product.scents[0].label}</span>
+                  </div>
+                  <h3>{product.name}</h3>
+                  <p>{product.desc}</p>
+                  <div className="showcase-footer">
+                    <strong>From {formatPrice(product.basePrice)}</strong>
+                    <button onClick={() => navigate(`product-${product.id}`)} aria-label={`Shop ${product.name}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="comparison home-why">
+        <div className="section-inner why-layout">
+          <div className="why-copy">
+            <span className="section-kicker">Why ScentQuest</span>
+            <h2>Not another toy.<br />A daily brain gym.</h2>
+            <p>
+              ScentQuest combines play, problem-solving and instinct into one simple
+              ritual that keeps curious minds engaged.
+            </p>
+            <ul className="why-list">
+              <li>
+                <span aria-hidden="true">01</span>
+                <div><strong>One scent at a time</strong><p>Simple rules make every session easy to understand.</p></div>
+              </li>
+              <li>
+                <span aria-hidden="true">02</span>
+                <div><strong>Progress that scales</strong><p>Move from easy finds to advanced scent trails.</p></div>
+              </li>
+              <li>
+                <span aria-hidden="true">03</span>
+                <div><strong>Reward built in</strong><p>The hidden treat turns searching into a satisfying game.</p></div>
+              </li>
+              <li>
+                <span aria-hidden="true">04</span>
+                <div><strong>Made for real homes</strong><p>Durable, food-grade materials for everyday play.</p></div>
+              </li>
+            </ul>
+            <button className="btn btn-primary btn-lg" onClick={() => navigate('shop')}>
+              Start a scent session
+            </button>
+          </div>
+
+          <div className="why-visual" aria-hidden="true">
+            <div className="why-device">
+              <div className="why-device-bar">
+                <span><i /><i /><i /></span>
+                <small>ScentQuest session</small>
+                <em>Live</em>
+              </div>
+              <div className="why-device-main">
+                <div className="why-score-ring">
+                  <span><strong>Focus</strong><small>Engaged</small></span>
+                </div>
+                <div className="why-device-stats">
+                  <span><small>Level</small><strong>02</strong></span>
+                  <span><small>Reward</small><strong>Find</strong></span>
+                  <span><small>Mode</small><strong>Scent</strong></span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="levels">
-        <div className="section-inner">
-          <span className="section-kicker">Choose your level</span>
-          <h2>Three difficulty levels</h2>
-          <div className="level-grid">
-            {levels.map((l) => (
-              <div key={l.name} className="level-card">
-                <span className="level-badge">{l.badge}</span>
-                <img src={l.image} alt={l.name} className="level-img" loading="lazy" />
-                <h3>{l.name}</h3>
-                <p>{l.desc}</p>
+              <div className="why-device-chart">
+                <span><i /><i /><i /><i /><i /><i /><i /></span>
+                <small>Mental activity</small>
               </div>
-            ))}
+            </div>
+            <div className="why-float-chip why-float-chip-one">
+              <span className="why-chip-dot" />
+              Nose-led challenge
+            </div>
+            <div className="why-float-chip why-float-chip-two">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 4 4L19 6" /></svg>
+              Food-grade
+            </div>
+            <div className="why-orbit-shadow" />
           </div>
         </div>
       </section>
 
-      <section className="comparison">
+      <section className="reviews home-reviews">
         <div className="section-inner">
-          <span className="section-kicker">Why ScentQuest</span>
-          <h2>ScentQuest vs ordinary toys</h2>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr><th aria-label="Feature" /><th>Ordinary toy</th><th>ScentQuest</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Mental workout</td><td className="cell-no">Minimal</td><td className="cell-yes">Nose-led challenge</td></tr>
-                <tr><td>Tires them out</td><td className="cell-no">Briefly</td><td className="cell-yes">Long-lasting calm</td></tr>
-                <tr><td>Scales with skill</td><td className="cell-no">Fixed</td><td className="cell-yes">3 difficulty levels</td></tr>
-                <tr><td>Keeps them busy</td><td className="cell-no">Short bursts</td><td className="cell-yes">Repeat engagement</td></tr>
-              </tbody>
-            </table>
+          <div className="home-section-heading reviews-heading">
+            <div>
+              <span className="section-kicker">Tail-wag approved</span>
+              <h2>What families say</h2>
+            </div>
+            <div className="review-rating">
+              <strong>4.9</strong>
+              <span>
+                <i>★★★★★</i>
+                <small>Loved by Indian dog parents</small>
+              </span>
+            </div>
           </div>
-        </div>
-      </section>
-
-      <section className="reviews">
-        <div className="section-inner">
-          <span className="section-kicker">Fast reviews</span>
-          <h2>What families say</h2>
           <div className="review-grid">
             {reviews.map((r, i) => (
-              <figure key={i} className="review-card">
-                <div className="stars" aria-label={`${r.stars} out of 5 stars`}>
-                  {'★'.repeat(r.stars)}
+              <figure key={i} className="review-card" style={{ '--review-delay': `${i * 0.25}s` }}>
+                <div className="review-card-top">
+                  <span className="review-avatar">{r.initials}</span>
+                  <div>
+                    <div className="stars" aria-label={`${r.stars} out of 5 stars`}>
+                      {'★'.repeat(r.stars)}
+                    </div>
+                    <span className="review-verified">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 4 4L19 6" /></svg>
+                      Verified buyer
+                    </span>
+                  </div>
                 </div>
-                <blockquote>{r.text}</blockquote>
-                <figcaption className="review-author">— {r.name}</figcaption>
+                <blockquote>“{r.text}”</blockquote>
+                <figcaption className="review-author">{r.name}</figcaption>
+                <span className="review-card-glow" aria-hidden="true" />
               </figure>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="cta">
+      <section className="cta home-cta">
         <div className="section-inner">
-          <div className="cta-card">
-            <h2>Ready for a calmer dog?</h2>
-            <p>Start with scent-led enrichment today. Free delivery over ₹4,999, cash on delivery, no advance payment.</p>
-            <button className="btn btn-primary btn-lg" onClick={() => navigate('shop')}>
-              Shop ScentQuest now
-            </button>
-            <div className="cta-links">
-              <button className="link-btn" onClick={() => navigate('about')}>About us</button>
-              <button className="link-btn" onClick={() => navigate('faq')}>FAQ</button>
-              <button className="link-btn" onClick={() => navigate('safety')}>Safety guide</button>
+          <div className="cta-card home-cta-card">
+            <div className="home-cta-copy">
+              <span className="home-cta-kicker">Your dog’s next favourite game</span>
+              <h2>Ready for a calmer, more curious dog?</h2>
+              <p>
+                Start with scent-led enrichment today. Free delivery over ₹4,999,
+                cash on delivery, and no advance payment.
+              </p>
+              <div className="home-cta-actions">
+                <button className="btn btn-primary btn-lg" onClick={() => navigate('shop')}>
+                  Shop ScentQuest now
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </button>
+                <button className="btn btn-outline btn-lg" onClick={() => navigate('faq')}>
+                  Talk to a scent guide
+                </button>
+              </div>
+              <div className="cta-links">
+                <button className="link-btn" onClick={() => navigate('about')}>About us</button>
+                <button className="link-btn" onClick={() => navigate('faq')}>FAQ</button>
+                <button className="link-btn" onClick={() => navigate('safety')}>Safety guide</button>
+              </div>
+            </div>
+            <div className="home-cta-visual" aria-hidden="true">
+              <span className="cta-orbit cta-orbit-one" />
+              <span className="cta-orbit cta-orbit-two" />
+              <span className="cta-orbit cta-orbit-three" />
+              <div className="cta-product-frame">
+                <img src="/images/scentquest-1-hero.png" alt="" loading="lazy" />
+              </div>
+              <span className="cta-float-label cta-float-label-one">New skill unlocked</span>
+              <span className="cta-float-label cta-float-label-two">Happy nose</span>
             </div>
           </div>
         </div>
       </section>
-    </>
+    </div>
   )
 }
 
